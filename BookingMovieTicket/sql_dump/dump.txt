@@ -1,0 +1,114 @@
+create table type
+(
+    id          integer not null
+        constraint type_pk
+            primary key,
+    person_type varchar(20)
+);
+
+alter table type
+    owner to postgres;
+
+create table person
+(
+    id_person       serial
+        constraint person_pk
+            primary key,
+    firstname       varchar(50)  not null,
+    lastname        varchar(50)  not null,
+    email_person    varchar(100) not null
+        constraint check_name
+            check ((email_person)::text ~* '^[A-Za-z0-9._+%-]+@[A-Za-z0-9.-]+[.][A-Za-z]+$'::text),
+    password_person varchar(30)  not null,
+    type_person     integer
+        constraint person_type_id_fk
+            references type,
+    age_person      integer      not null
+);
+
+alter table person
+    owner to postgres;
+
+create unique index person_email_person
+    on person (email_person);
+
+create table genre_movie
+(
+    id_genre serial
+        constraint genre_movie_pk
+            primary key,
+    genre    varchar(30) not null
+);
+
+alter table genre_movie
+    owner to postgres;
+
+create table movies
+(
+    id_movie serial
+        constraint movies_pk
+            primary key,
+    title    varchar(50) not null,
+    duration varchar(15) not null,
+    id_genre integer
+        constraint movies_genre_movie_id_genre_fk
+            references genre_movie
+);
+
+alter table movies
+    owner to postgres;
+
+create unique index movies_title
+    on movies (title);
+
+create table room
+(
+    id_room   serial
+        constraint room_pk
+            primary key,
+    room_name varchar(30) not null
+        unique,
+    nr_seats  integer     not null
+);
+
+alter table room
+    owner to postgres;
+
+create table tickets
+(
+    id_ticket     serial,
+    date_ticket   varchar(40) not null,
+    id_room       integer     not null
+        constraint tickets_room_id_room_fk
+            references room,
+    id_movie      integer     not null
+        constraint tickets_movies_id_movie_fk
+            references movies,
+    nr_seats_sold integer,
+    primary key (id_ticket, id_room, id_movie)
+);
+
+alter table tickets
+    owner to postgres;
+
+create unique index ticket_id
+    on tickets (id_ticket);
+
+create table purchases
+(
+    id_purchase    serial,
+    id_ticket      integer not null
+        constraint purchases_tickets_id_ticket_fk
+            references tickets (id_ticket),
+    id_person      integer not null
+        constraint purchases_person_id_person_fk
+            references person,
+    amount_tickets integer not null,
+    price_tickets  double precision,
+    constraint purchases_pk
+        primary key (id_purchase, id_ticket, id_person)
+);
+
+alter table purchases
+    owner to postgres;
+
